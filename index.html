@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArtiDoc — L'assistant admin des artisans</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f8f6;color:#1a1a1a;max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+.page{display:none;flex:1;flex-direction:column;}.page.active{display:flex;}
+.screen{display:none;flex:1;flex-direction:column;overflow-y:auto;}.screen.active{display:flex;}
+.header{padding:1rem 1.25rem 0.8rem;border-bottom:0.5px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:space-between;background:#fff;}
+.header-left{display:flex;align-items:center;gap:9px;}
+.header-left i{font-size:18px;color:#888;}
+.header h1{font-size:17px;font-weight:500;color:#1a1a1a;}
+.header p{font-size:12px;color:#888;margin-top:1px;}
+.add-btn{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:#1a1a1a;background:none;border:0.5px solid rgba(0,0,0,0.25);border-radius:8px;padding:6px 10px;cursor:pointer;}
+.bottom-nav{display:flex;border-top:0.5px solid rgba(0,0,0,0.1);background:#fff;flex-shrink:0;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 8px;cursor:pointer;background:none;border:none;font-family:inherit;}
+.nav-item i{font-size:20px;color:#aaa;}
+.nav-item span{font-size:10px;color:#aaa;}
+.nav-item.active i,.nav-item.active span{color:#1a1a1a;}
+.tabs{display:flex;border-bottom:0.5px solid rgba(0,0,0,0.1);padding:0 1.25rem;background:#fff;}
+.tab{flex:1;padding:9px 0;font-size:13px;text-align:center;cursor:pointer;color:#888;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;}
+.tab.active{color:#1a1a1a;font-weight:500;border-bottom:2px solid #1a1a1a;}
+.list-area{padding:1rem 1.25rem;display:flex;flex-direction:column;gap:8px;}
+.card{background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;padding:0.9rem 1rem;cursor:pointer;transition:border-color 0.15s;}
+.card:hover{border-color:rgba(0,0,0,0.25);}
+.card-row{display:flex;align-items:center;gap:10px;}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0;}
+.av-actif{background:#e6f1fb;color:#185fa5;}
+.av-futur{background:#faeeda;color:#854f0b;}
+.av-ancien{background:#f1efe8;color:#5f5e5a;}
+.card-body{flex:1;min-width:0;}
+.card-title{font-size:14px;font-weight:500;color:#1a1a1a;}
+.card-meta{font-size:12px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500;}
+.pill-actif{background:#eaf3de;color:#3b6d11;}
+.pill-futur{background:#faeeda;color:#854f0b;}
+.pill-ancien{background:#f1efe8;color:#5f5e5a;}
+.back-btn{font-size:13px;color:#888;cursor:pointer;display:flex;align-items:center;gap:4px;background:none;border:none;padding:0;margin-bottom:8px;}
+.form-area{padding:1rem 1.25rem;display:flex;flex-direction:column;gap:11px;overflow-y:auto;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-label{font-size:12px;color:#888;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;font-size:14px;border:0.5px solid rgba(0,0,0,0.15);border-radius:8px;background:#fff;color:#1a1a1a;font-family:inherit;}
+.form-group textarea{min-height:90px;resize:vertical;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:rgba(0,0,0,0.4);}
+.btn-primary{width:100%;padding:11px;font-size:14px;font-weight:500;background:#1a1a1a;color:#fff;border:none;border-radius:8px;cursor:pointer;}
+.btn-secondary{width:100%;padding:10px;font-size:14px;background:transparent;color:#888;border:0.5px solid rgba(0,0,0,0.15);border-radius:8px;cursor:pointer;}
+.btn-danger{width:100%;padding:10px;font-size:14px;background:transparent;color:#a32d2d;border:0.5px solid #a32d2d;border-radius:8px;cursor:pointer;}
+.section-title{font-size:11px;font-weight:500;color:#888;letter-spacing:0.06em;padding:0.9rem 1.25rem 0.5rem;}
+.info-row{display:flex;align-items:flex-start;gap:10px;}
+.info-row i{font-size:15px;color:#888;margin-top:1px;flex-shrink:0;}
+.info-label{font-size:11px;color:#888;}
+.info-value{font-size:13px;color:#1a1a1a;margin-top:1px;}
+.statut-row{display:flex;gap:6px;flex-wrap:wrap;}
+.statut-pill{padding:5px 12px;font-size:12px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.15);cursor:pointer;background:#fff;color:#888;font-family:inherit;}
+.statut-pill.sel-actif{background:#eaf3de;color:#3b6d11;border-color:#3b6d11;}
+.statut-pill.sel-futur{background:#faeeda;color:#854f0b;border-color:#854f0b;}
+.statut-pill.sel-ancien{background:#f1efe8;color:#5f5e5a;}
+.empty{text-align:center;padding:2rem 1.25rem;color:#888;font-size:14px;}
+.empty i{font-size:32px;display:block;margin-bottom:10px;opacity:0.4;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:8px 18px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.toast.show{opacity:1;}
+.auth-wrap{padding:2.5rem 1.25rem;display:flex;flex-direction:column;gap:12px;flex:1;}
+.auth-logo{text-align:center;margin-bottom:12px;}
+.auth-logo i{font-size:40px;color:#888;}
+.auth-logo h1{font-size:22px;font-weight:500;color:#1a1a1a;margin-top:10px;}
+.auth-logo p{font-size:13px;color:#888;margin-top:4px;}
+.auth-tabs{display:flex;gap:8px;margin-bottom:4px;}
+.auth-tab{flex:1;padding:8px;font-size:13px;border:0.5px solid rgba(0,0,0,0.15);border-radius:8px;cursor:pointer;background:#fff;color:#888;font-family:inherit;text-align:center;}
+.auth-tab.active{background:#f1efe8;color:#1a1a1a;font-weight:500;}
+.error-msg{font-size:12px;color:#a32d2d;padding:8px 10px;background:#fcebeb;border-radius:8px;display:none;}
+.nav-row{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1.25rem 0.5rem;}
+.nav-btn{background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:16px;color:#888;line-height:1;}
+.nav-label{font-size:14px;font-weight:500;color:#1a1a1a;}
+.month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;padding:0 1.25rem 1rem;}
+.day-header{font-size:10px;color:#888;text-align:center;padding:4px 0;}
+.day-cell{min-height:40px;padding:4px 2px;border-radius:8px;cursor:pointer;}
+.day-cell:hover{background:#f1efe8;}
+.day-num{font-size:12px;text-align:center;color:#888;margin-bottom:2px;}
+.day-num.today-num{background:#1a1a1a;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 2px;font-size:11px;}
+.day-num.other-m{opacity:0.3;}
+.rdv-dot{height:4px;border-radius:2px;background:#378ADD;margin:1px 2px;}
+.week-view{padding:0 1.25rem 1rem;display:flex;flex-direction:column;gap:6px;}
+.week-block{border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;overflow:hidden;background:#fff;}
+.week-hdr{padding:7px 12px;background:#f8f8f6;display:flex;align-items:center;justify-content:space-between;}
+.week-lbl{font-size:12px;font-weight:500;color:#1a1a1a;}
+.week-lbl.today-lbl{color:#185fa5;}
+.week-add-btn{font-size:11px;color:#888;background:none;border:none;cursor:pointer;padding:0;}
+.rdv-row{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-top:0.5px solid rgba(0,0,0,0.08);cursor:pointer;}
+.rdv-row:hover{background:#f8f8f6;}
+.rdv-time{font-size:11px;color:#888;min-width:36px;margin-top:1px;}
+.rdv-name{font-size:13px;font-weight:500;color:#1a1a1a;}
+.rdv-type{font-size:11px;color:#888;margin-top:1px;}
+.no-rdv{font-size:12px;color:#888;padding:8px 12px;}
+.view-toggle{display:flex;border:0.5px solid rgba(0,0,0,0.15);border-radius:8px;overflow:hidden;margin:0.75rem 1.25rem 0;}
+.view-btn{flex:1;padding:7px;font-size:12px;background:none;border:none;cursor:pointer;color:#888;font-family:inherit;}
+.view-btn.active{background:#f1efe8;color:#1a1a1a;font-weight:500;}
+.doc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 1.25rem 1rem;}
+.doc-card{background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;padding:0.9rem;cursor:pointer;transition:border-color 0.15s;}
+.doc-card:hover{border-color:rgba(0,0,0,0.25);}
+.doc-icon{font-size:20px;color:#888;margin-bottom:7px;}
+.doc-card h3{font-size:13px;font-weight:500;color:#1a1a1a;}
+.doc-card p{font-size:11px;color:#888;margin-top:2px;line-height:1.4;}
+.gen-result{background:#f8f8f6;border-radius:8px;padding:1rem;font-size:13px;color:#1a1a1a;line-height:1.75;white-space:pre-wrap;}
+.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:1rem 1.25rem 0;}
+.metric{background:#f8f8f6;border-radius:8px;padding:0.9rem 1rem;}
+.metric-label{font-size:11px;color:#888;display:flex;align-items:center;gap:5px;}
+.metric-value{font-size:20px;font-weight:500;color:#1a1a1a;margin-top:5px;}
+.metric-value.danger{color:#a32d2d;}
+.metric-value.warning{color:#854f0b;}
+.metric-sub{font-size:11px;color:#888;margin-top:2px;}
+.bar-row{display:flex;align-items:flex-end;gap:6px;height:110px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;}
+.bar{width:100%;border-radius:4px 4px 0 0;min-height:4px;}
+.bar-current{background:#378ADD;}
+.bar-past{background:rgba(55,138,221,0.25);}
+.bar-lbl{font-size:10px;color:#888;}
+.bar-val{font-size:9px;color:#888;}
+.axis-line{height:0.5px;background:rgba(0,0,0,0.1);margin:4px 1.25rem 0.5rem;}
+.tx-list{padding:0 1.25rem 1.25rem;display:flex;flex-direction:column;gap:7px;}
+.tx{background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;padding:0.8rem 1rem;display:flex;align-items:center;gap:10px;}
+.tx-body{flex:1;min-width:0;}
+.tx-label{font-size:13px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tx-meta{font-size:11px;color:#888;margin-top:2px;}
+.pill-encaisse{background:#eaf3de;color:#3b6d11;}
+.pill-impaye{background:#fcebeb;color:#a32d2d;}
+.pill-attente{background:#faeeda;color:#854f0b;}
+.profil-card{margin:1rem 1.25rem;background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;padding:1rem;display:flex;flex-direction:column;gap:10px;}
+</style>
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<!-- AUTH -->
+<div id="auth-page" class="page active">
+  <div class="screen active">
+    <div class="auth-wrap">
+      <div class="auth-logo">
+        <i class="ti ti-tool"></i>
+        <h1>ArtiDoc</h1>
+        <p>L'assistant admin des artisans</p>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="setAuthTab('login',this)">Connexion</button>
+        <button class="auth-tab" onclick="setAuthTab('signup',this)">Créer un compte</button>
+      </div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" id="auth-email" placeholder="votre@email.com"></div>
+      <div class="form-group"><label class="form-label">Mot de passe</label><input type="password" id="auth-password" placeholder="••••••••"></div>
+      <div class="error-msg" id="auth-error"></div>
+      <button class="btn-primary" id="auth-btn" onclick="doAuth()">Se connecter</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="main-app" style="display:none;flex:1;flex-direction:column;">
+
+  <!-- CLIENTS -->
+  <div id="page-clients" class="page active">
+    <div id="cl-list" class="screen active">
+      <div class="header">
+        <div class="header-left"><i class="ti ti-users"></i><div><h1>Clients</h1><p id="cl-count">—</p></div></div>
+        <button class="add-btn" onclick="showScreen('page-clients','cl-add')"><i class="ti ti-plus"></i> Nouveau</button>
+      </div>
+      <div class="tabs">
+        <button class="tab active" onclick="setClTab('actif',this)">En cours</button>
+        <button class="tab" onclick="setClTab('futur',this)">À venir</button>
+        <button class="tab" onclick="setClTab('ancien',this)">Anciens</button>
+      </div>
+      <div style="padding:0.75rem 1.25rem 0.5rem;position:relative;">
+        <i class="ti ti-search" style="position:absolute;left:22px;top:50%;transform:translateY(-50%);font-size:15px;color:#aaa;pointer-events:none;"></i>
+        <input type="text" id="cl-search" placeholder="Rechercher..." oninput="renderClients()" style="width:100%;padding:8px 12px 8px 34px;font-size:14px;border:0.5px solid rgba(0,0,0,0.15);border-radius:8px;background:#f8f8f6;color:#1a1a1a;font-family:inherit;">
+      </div>
+      <div class="list-area" id="cl-list-body"><div class="empty">Chargement...</div></div>
+    </div>
+    <div id="cl-add" class="screen">
+      <div class="form-area">
+        <button class="back-btn" onclick="showScreen('page-clients','cl-list')"><i class="ti ti-arrow-left"></i> Retour</button>
+        <div class="form-group"><label class="form-label">Nom complet</label><input type="text" id="cl-nom" placeholder="Jean Dupont"></div>
+        <div class="form-group"><label class="form-label">Téléphone</label><input type="tel" id="cl-tel" placeholder="06 00 00 00 00"></div>
+        <div class="form-group"><label class="form-label">Email</label><input type="email" id="cl-email" placeholder="jean@email.com"></div>
+        <div class="form-group"><label class="form-label">Adresse chantier</label><input type="text" id="cl-adresse" placeholder="12 rue des Lilas, 69000 Lyon"></div>
+        <div class="form-group"><label class="form-label">Type de travaux</label>
+          <select id="cl-type"><option value="">-- Sélectionner --</option><option>Plomberie</option><option>Électricité</option><option>Maçonnerie</option><option>Menuiserie</option><option>Carrelage</option><option>Peinture</option><option>Toiture</option><option>Chauffage</option><option>Isolation</option><option>Divers</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Statut</label>
+          <div class="statut-row" id="cl-statut-pills">
+            <button class="statut-pill sel-actif" onclick="selectClStatut('actif')">En cours</button>
+            <button class="statut-pill" onclick="selectClStatut('futur')">À venir</button>
+            <button class="statut-pill" onclick="selectClStatut('ancien')">Ancien</button>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="addClient()">Ajouter le client</button>
+        <button class="btn-secondary" onclick="showScreen('page-clients','cl-list')">Annuler</button>
+      </div>
+    </div>
+    <div id="cl-fiche" class="screen">
+      <div style="padding:1.25rem;border-bottom:0.5px solid rgba(0,0,0,0.1);display:flex;align-items:center;gap:14px;background:#fff;">
+        <div class="avatar" id="cl-fiche-av" style="width:48px;height:48px;font-size:16px;"></div>
+        <div><div style="font-size:16px;font-weight:500;color:#1a1a1a" id="cl-fiche-nom"></div><div style="font-size:12px;color:#888;margin-top:3px;" id="cl-fiche-sub"></div></div>
+      </div>
+      <div class="form-area">
+        <button class="back-btn" onclick="showScreen('page-clients','cl-list');loadClients()"><i class="ti ti-arrow-left"></i> Retour</button>
+        <div class="info-row"><i class="ti ti-phone"></i><div><div class="info-label">Téléphone</div><div class="info-value" id="cl-fiche-tel"></div></div></div>
+        <div class="info-row"><i class="ti ti-mail"></i><div><div class="info-label">Email</div><div class="info-value" id="cl-fiche-email"></div></div></div>
+        <div class="info-row"><i class="ti ti-map-pin"></i><div><div class="info-label">Adresse</div><div class="info-value" id="cl-fiche-adresse"></div></div></div>
+        <div class="form-group"><label class="form-label">Changer le statut</label><div class="statut-row" id="cl-fiche-statut"></div></div>
+      </div>
+      <div class="section-title">RDV liés</div>
+      <div class="list-area" id="cl-fiche-rdvs" style="padding-top:0;padding-bottom:0.5rem"></div>
+      <div style="padding:0.5rem 1.25rem 1.25rem;">
+        <button class="btn-danger" onclick="deleteClient()"><i class="ti ti-trash"></i> Supprimer ce client</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AGENDA -->
+  <div id="page-cal" class="page">
+    <div id="cal-main" class="screen active">
+      <div class="header">
+        <div class="header-left"><i class="ti ti-calendar"></i><div><h1>Agenda</h1><p id="rdv-count">—</p></div></div>
+        <button class="add-btn" onclick="showRdvAdd(null)"><i class="ti ti-plus"></i> RDV</button>
+      </div>
+      <div class="view-toggle">
+        <button class="view-btn active" onclick="setCalView('mois',this)"><i class="ti ti-calendar-month"></i> Mois</button>
+        <button class="view-btn" onclick="setCalView('semaine',this)"><i class="ti ti-calendar-week"></i> Semaine</button>
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn" onclick="calNav(-1)">‹</button>
+        <span class="nav-label" id="cal-label"></span>
+        <button class="nav-btn" onclick="calNav(1)">›</button>
+      </div>
+      <div id="cal-body"></div>
+    </div>
+    <div id="cal-add" class="screen">
+      <div class="form-area">
+        <button class="back-btn" onclick="showScreen('page-cal','cal-main')"><i class="ti ti-arrow-left"></i> Retour</button>
+        <div class="form-group"><label class="form-label">Client lié</label><select id="rdv-client"></select></div>
+        <div class="form-group"><label class="form-label">Date</label><input type="date" id="rdv-date"></div>
+        <div class="form-group"><label class="form-label">Heure</label><input type="time" id="rdv-heure"></div>
+        <div class="form-group"><label class="form-label">Type d'intervention</label>
+          <select id="rdv-typeint"><option value="">-- Sélectionner --</option><option>Visite diagnostic</option><option>Devis sur place</option><option>Intervention / chantier</option><option>Livraison matériel</option><option>Réception de chantier</option><option>Autre</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><textarea id="rdv-notes" placeholder="Informations utiles..."></textarea></div>
+        <button class="btn-primary" onclick="addRdv()">Enregistrer le RDV</button>
+        <button class="btn-secondary" onclick="showScreen('page-cal','cal-main')">Annuler</button>
+      </div>
+    </div>
+    <div id="cal-detail" class="screen">
+      <div class="form-area">
+        <button class="back-btn" onclick="showScreen('page-cal','cal-main')"><i class="ti ti-arrow-left"></i> Retour</button>
+        <div style="background:#f8f8f6;border-radius:8px;padding:1rem;display:flex;flex-direction:column;gap:10px">
+          <div class="info-row"><i class="ti ti-user"></i><div><div class="info-label">Client</div><div class="info-value" id="rd-client"></div></div></div>
+          <div class="info-row"><i class="ti ti-calendar"></i><div><div class="info-label">Date</div><div class="info-value" id="rd-date"></div></div></div>
+          <div class="info-row"><i class="ti ti-tool"></i><div><div class="info-label">Intervention</div><div class="info-value" id="rd-type"></div></div></div>
+          <div class="info-row" id="rd-notes-row"><i class="ti ti-notes"></i><div><div class="info-label">Notes</div><div class="info-value" id="rd-notes"></div></div></div>
+        </div>
+        <button class="btn-danger" onclick="deleteRdv()"><i class="ti ti-trash"></i> Supprimer ce RDV</button>
+        <button class="btn-secondary" onclick="showScreen('page-cal','cal-main')">Retour</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENTS -->
+  <div id="page-docs" class="page">
+    <div id="docs-home" class="screen active">
+      <div class="header"><div class="header-left"><i class="ti ti-file-text"></i><div><h1>Documents</h1><p>Assisté par IA</p></div></div></div>
+      <div class="section-title">Choisir un document</div>
+      <div class="doc-grid">
+        <div class="doc-card" onclick="showDocForm('devis')"><div class="doc-icon"><i class="ti ti-file-invoice"></i></div><h3>Devis</h3><p>Main d'œuvre, TVA</p></div>
+        <div class="doc-card" onclick="showDocForm('relance')"><div class="doc-icon"><i class="ti ti-clock"></i></div><h3>Relance</h3><p>Facture impayée</p></div>
+        <div class="doc-card" onclick="showDocForm('email')"><div class="doc-icon"><i class="ti ti-mail"></i></div><h3>Email client</h3><p>Suivi, réponse</p></div>
+        <div class="doc-card" onclick="showDocForm('rdv')"><div class="doc-icon"><i class="ti ti-calendar"></i></div><h3>Confirmation RDV</h3><p>Rappel intervention</p></div>
+        <div class="doc-card" onclick="showDocForm('courrier')"><div class="doc-icon"><i class="ti ti-building"></i></div><h3>Courrier admin</h3><p>Mairie, assurance</p></div>
+        <div class="doc-card" onclick="showDocForm('soustraitance')"><div class="doc-icon"><i class="ti ti-users"></i></div><h3>Sous-traitance</h3><p>Accord de mission</p></div>
+      </div>
+    </div>
+    <div id="docs-form" class="screen">
+      <div class="form-area">
+        <button class="back-btn" onclick="showScreen('page-docs','docs-home')"><i class="ti ti-arrow-left"></i> Retour</button>
+        <div><span id="doc-badge" style="font-size:11px;padding:3px 9px;border-radius:8px;background:#f1efe8;color:#888;display:inline-block;margin-bottom:8px"></span>
+        <label class="form-label" for="doc-brief">Décrivez votre besoin</label>
+        <textarea id="doc-brief" style="margin-top:4px" placeholder="Décrivez la situation..."></textarea></div>
+        <button class="btn-primary" onclick="generateDoc()">Générer ↗</button>
+      </div>
+    </div>
+    <div id="docs-result" class="screen">
+      <div class="form-area">
+        <button class="back-btn" onclick="showScreen('page-docs','docs-form')"><i class="ti ti-arrow-left"></i> Modifier</button>
+        <div id="doc-loading" style="display:none;text-align:center;padding:2rem;color:#888">Génération en cours...</div>
+        <div id="doc-result" class="gen-result" style="display:none"></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:6px" id="doc-copy-row" style="display:none">
+          <button onclick="copyDoc()" style="font-size:12px;color:#888;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:8px;padding:5px 10px;cursor:pointer;display:flex;align-items:center;gap:4px"><i class="ti ti-copy"></i> Copier</button>
+        </div>
+        <button class="btn-secondary" onclick="showScreen('page-docs','docs-home')">Nouveau document</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFIL -->
+  <div id="page-profil" class="page">
+    <div class="screen active">
+      <div class="header"><div class="header-left"><i class="ti ti-user"></i><div><h1>Mon compte</h1><p id="profil-email"></p></div></div></div>
+      <div class="profil-card">
+        <div class="info-row"><i class="ti ti-mail"></i><div><div class="info-label">Email</div><div class="info-value" id="profil-email-val"></div></div></div>
+        <div class="info-row"><i class="ti ti-database"></i><div><div class="info-label">Base de données</div><div class="info-value" style="color:#3b6d11">Connectée à Supabase</div></div></div>
+        <div class="info-row"><i class="ti ti-shield"></i><div><div class="info-label">Sécurité</div><div class="info-value">Données chiffrées et isolées</div></div></div>
+      </div>
+      <div class="form-area" style="padding-top:0">
+        <button class="btn-danger" onclick="doLogout()"><i class="ti ti-logout"></i> Se déconnecter</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="goPage('clients')" id="nav-clients"><i class="ti ti-users"></i><span>Clients</span></button>
+    <button class="nav-item" onclick="goPage('cal')" id="nav-cal"><i class="ti ti-calendar"></i><span>Agenda</span></button>
+    <button class="nav-item" onclick="goPage('docs')" id="nav-docs"><i class="ti ti-file-text"></i><span>Documents</span></button>
+    <button class="nav-item" onclick="goPage('profil')" id="nav-profil"><i class="ti ti-user"></i><span>Compte</span></button>
+  </div>
+</div>
+
+<script>
+const SUPA_URL='https://ilyngflcfmnimaovnzql.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlseW5nZmxjZm1uaW1hb3ZuenFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3Nzc4MjYsImV4cCI6MjA5NzM1MzgyNn0.Dev-jD-NrcfoYvIvhsBp_3_ujy6bzVT_tsmh-RMmhzU';
+let accessToken=null,currentUser=null,clients=[],rdvs=[],currentClTab='actif',currentClStatut='actif',currentClId=null,currentRdvId=null,currentCalView='mois',currentCalDate=new Date(),currentDocType='devis';
+const today=new Date();
+const MF=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const MS=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+const WD=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+const SL={actif:'En cours',futur:'À venir',ancien:'Ancien'};
+const AV={actif:'av-actif',futur:'av-futur',ancien:'av-ancien'};
+const PC={actif:'pill-actif',futur:'pill-futur',ancien:'pill-ancien'};
+
+async function supa(path,method='GET',body=null){
+  const opts={method,headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+(accessToken||SUPA_KEY),'Prefer':'return=representation'}};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(SUPA_URL+path,opts);
+  const t=await r.text();return t?JSON.parse(t):[];
+}
+async function supaAuth(path,body){
+  const r=await fetch(SUPA_URL+'/auth/v1'+path,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY},body:JSON.stringify(body)});
+  return await r.json();
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function initials(n){return n.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+function fmtDate(d,o=0){const nd=new Date(d);nd.setDate(nd.getDate()+o);return nd.toISOString().split('T')[0];}
+function isToday(s){return s===fmtDate(today);}
+
+let authMode='login';
+function setAuthTab(mode,el){authMode=mode;document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('auth-btn').textContent=mode==='login'?'Se connecter':'Créer mon compte';document.getElementById('auth-error').style.display='none';}
+
+async function doAuth(){
+  const email=document.getElementById('auth-email').value.trim(),password=document.getElementById('auth-password').value;
+  const errEl=document.getElementById('auth-error');errEl.style.display='none';
+  if(!email||!password){errEl.textContent='Email et mot de passe requis.';errEl.style.display='block';return;}
+  const path=authMode==='login'?'/token?grant_type=password':'/signup';
+  const data=await supaAuth(path,{email,password});
+  if(data.error||data.error_description){errEl.textContent=data.error_description||data.error;errEl.style.display='block';return;}
+  accessToken=data.access_token;currentUser=data.user;
+  document.getElementById('auth-page').style.display='none';
+  document.getElementById('main-app').style.display='flex';
+  document.getElementById('profil-email').textContent=email;
+  document.getElementById('profil-email-val').textContent=email;
+  await loadClients();await loadRdvs();
+}
+async function doLogout(){accessToken=null;currentUser=null;clients=[];rdvs=[];document.getElementById('main-app').style.display='none';document.getElementById('auth-page').style.display='flex';}
+
+function goPage(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+p).classList.add('active');document.getElementById('nav-'+p).classList.add('active');if(p==='cal')renderCal();}
+function showScreen(pid,sid){document.querySelectorAll('#'+pid+' .screen').forEach(s=>s.classList.remove('active'));document.getElementById(sid).classList.add('active');}
+
+async function loadClients(){try{clients=await supa('/rest/v1/clients?order=created_at.desc');renderClients();}catch(e){toast('Erreur chargement');}}
+function setClTab(tab,el){currentClTab=tab;document.querySelectorAll('#cl-list .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('cl-search').value='';renderClients();}
+function renderClients(){
+  const q=document.getElementById('cl-search').value.toLowerCase();
+  const f=clients.filter(c=>c.statut===currentClTab&&(c.nom.toLowerCase().includes(q)||(c.type||'').toLowerCase().includes(q)));
+  document.getElementById('cl-count').textContent=clients.length+' client'+(clients.length>1?'s':'');
+  const el=document.getElementById('cl-list-body');
+  if(!f.length){el.innerHTML='<div class="empty"><i class="ti ti-users"></i>Aucun client ici.</div>';return;}
+  el.innerHTML=f.map(c=>`<div class="card" onclick="showFiche('${c.id}')"><div class="card-row"><div class="avatar ${AV[c.statut]||'av-actif'}">${initials(c.nom)}</div><div class="card-body"><div class="card-title">${c.nom}</div><div class="card-meta">${c.type||'—'} · ${c.adresse||'—'}</div></div><span class="pill ${PC[c.statut]||'pill-actif'}">${SL[c.statut]||'—'}</span></div></div>`).join('');
+}
+function selectClStatut(s){currentClStatut=s;document.querySelectorAll('#cl-statut-pills .statut-pill').forEach(p=>{p.className='statut-pill';if(p.textContent===SL[s])p.classList.add('sel-'+s);});}
+async function addClient(){
+  const nom=document.getElementById('cl-nom').value.trim();if(!nom){document.getElementById('cl-nom').focus();return;}
+  try{await supa('/rest/v1/clients','POST',{nom,tel:document.getElementById('cl-tel').value.trim()||'—',email:document.getElementById('cl-email').value.trim()||'—',adresse:document.getElementById('cl-adresse').value.trim()||'—',type:document.getElementById('cl-type').value||'Divers',statut:currentClStatut,user_id:currentUser.id});await loadClients();currentClTab=currentClStatut;document.querySelectorAll('#cl-list .tab').forEach((t,i)=>{t.classList.remove('active');if(['actif','futur','ancien'][i]===currentClStatut)t.classList.add('active');});showScreen('page-clients','cl-list');toast('Client ajouté');}catch(e){toast('Erreur');}
+}
+function showFiche(id){
+  currentClId=id;const c=clients.find(x=>x.id===id);if(!c)return;
+  document.getElementById('cl-fiche-av').textContent=initials(c.nom);document.getElementById('cl-fiche-av').className='avatar '+(AV[c.statut]||'av-actif');document.getElementById('cl-fiche-av').style.cssText='width:48px;height:48px;font-size:16px;';
+  document.getElementById('cl-fiche-nom').textContent=c.nom;document.getElementById('cl-fiche-sub').textContent=(c.type||'—')+' · '+SL[c.statut];
+  document.getElementById('cl-fiche-tel').textContent=c.tel||'—';document.getElementById('cl-fiche-email').textContent=c.email||'—';document.getElementById('cl-fiche-adresse').textContent=c.adresse||'—';
+  document.getElementById('cl-fiche-statut').innerHTML=['actif','futur','ancien'].map(s=>`<button class="statut-pill ${c.statut===s?'sel-'+s:''}" onclick="changeClStatut('${s}')">${SL[s]}</button>`).join('');
+  const cr=rdvs.filter(r=>r.client_id===id);
+  document.getElementById('cl-fiche-rdvs').innerHTML=!cr.length?'<div style="font-size:13px;color:#888;padding-bottom:8px">Aucun RDV lié.</div>':cr.map(r=>`<div class="card" style="padding:0.7rem 1rem;margin-bottom:6px;cursor:default"><div style="font-size:13px;font-weight:500">${r.typeint}</div><div style="font-size:11px;color:#888;margin-top:2px">${r.date} à ${r.heure}</div></div>`).join('');
+  showScreen('page-clients','cl-fiche');
+}
+async function changeClStatut(s){try{await supa(`/rest/v1/clients?id=eq.${currentClId}`,'PATCH',{statut:s});const c=clients.find(x=>x.id===currentClId);c.statut=s;showFiche(currentClId);toast('Statut mis à jour');}catch(e){toast('Erreur');}}
+async function deleteClient(){try{await supa(`/rest/v1/clients?id=eq.${currentClId}`,'DELETE');clients=clients.filter(c=>c.id!==currentClId);showScreen('page-clients','cl-list');renderClients();toast('Client supprimé');}catch(e){toast('Erreur');}}
+
+async function loadRdvs(){try{rdvs=await supa('/rest/v1/rdvs?order=date.asc');renderCal();}catch(e){}}
+function setCalView(v,el){currentCalView=v;document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderCal();}
+function calNav(dir){if(currentCalView==='mois')currentCalDate.setMonth(currentCalDate.getMonth()+dir);else currentCalDate.setDate(currentCalDate.getDate()+7*dir);renderCal();}
+function renderCal(){
+  document.getElementById('rdv-count').textContent=rdvs.length+' RDV';
+  const y=currentCalDate.getFullYear(),m=currentCalDate.getMonth();
+  if(currentCalView==='mois'){
+    document.getElementById('cal-label').textContent=MF[m]+' '+y;
+    const first=new Date(y,m,1);let sd=first.getDay()-1;if(sd<0)sd=6;
+    const dim=new Date(y,m+1,0).getDate(),dip=new Date(y,m,0).getDate();
+    let h='<div class="month-grid">';
+    ['L','M','M','J','V','S','D'].forEach(d=>h+=`<div class="day-header">${d}</div>`);
+    for(let i=0;i<sd;i++)h+=`<div class="day-cell"><div class="day-num other-m">${dip-sd+1+i}</div></div>`;
+    for(let d=1;d<=dim;d++){const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const dr=rdvs.filter(r=>r.date===ds);h+=`<div class="day-cell" onclick="showRdvAdd('${ds}')"><div class="day-num${isToday(ds)?' today-num':''}">${d}</div>${dr.map(()=>'<div class="rdv-dot"></div>').join('')}</div>`;}
+    const rem=(sd+dim)%7===0?0:7-(sd+dim)%7;for(let i=1;i<=rem;i++)h+=`<div class="day-cell"><div class="day-num other-m">${i}</div></div>`;
+    h+='</div>';document.getElementById('cal-body').innerHTML=h;
+  } else {
+    const mon=new Date(currentCalDate);const dow=mon.getDay();mon.setDate(mon.getDate()+(dow===0?-6:1-dow));
+    document.getElementById('cal-label').textContent=`Semaine du ${mon.getDate()} ${MS[mon.getMonth()]}`;
+    let h='<div class="week-view">';
+    for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=d.toISOString().split('T')[0];const dr=rdvs.filter(r=>r.date===ds).sort((a,b)=>a.heure.localeCompare(b.heure));const isT=isToday(ds);
+    h+=`<div class="week-block"><div class="week-hdr"><span class="week-lbl${isT?' today-lbl':''}">${WD[i]} ${d.getDate()}</span><button class="week-add-btn" onclick="showRdvAdd('${ds}')"><i class="ti ti-plus"></i></button></div>`;
+    if(!dr.length)h+='<div class="no-rdv">Aucun RDV</div>';else dr.forEach(r=>{const c=clients.find(x=>x.id===r.client_id);h+=`<div class="rdv-row" onclick="showRdvDetail('${r.id}')"><span class="rdv-time">${r.heure}</span><div><div class="rdv-name">${c?c.nom:'—'}</div><div class="rdv-type">${r.typeint}</div></div></div>`;});
+    h+='</div>';}h+='</div>';document.getElementById('cal-body').innerHTML=h;
+  }
+}
+function showRdvAdd(ds){const sel=document.getElementById('rdv-client');sel.innerHTML='<option value="">-- Sélectionner --</option>'+clients.map(c=>`<option value="${c.id}">${c.nom}</option>`).join('');document.getElementById('rdv-date').value=ds||fmtDate(today);document.getElementById('rdv-heure').value='09:00';document.getElementById('rdv-typeint').value='';document.getElementById('rdv-notes').value='';showScreen('page-cal','cal-add');}
+async function addRdv(){const cid=document.getElementById('rdv-client').value,date=document.getElementById('rdv-date').value,heure=document.getElementById('rdv-heure').value,typeint=document.getElementById('rdv-typeint').value||'Autre';if(!date||!heure)return;try{await supa('/rest/v1/rdvs','POST',{client_id:cid||null,date,heure,typeint,notes:document.getElementById('rdv-notes').value.trim(),user_id:currentUser.id});await loadRdvs();showScreen('page-cal','cal-main');toast('RDV enregistré');}catch(e){toast('Erreur');}}
+function showRdvDetail(id){currentRdvId=id;const r=rdvs.find(x=>x.id===id);if(!r)return;const c=clients.find(x=>x.id===r.client_id);const d=new Date(r.date+'T00:00:00');document.getElementById('rd-client').textContent=c?c.nom:'—';document.getElementById('rd-date').textContent=`${WD[d.getDay()===0?6:d.getDay()-1]} ${d.getDate()} ${MF[d.getMonth()]} à ${r.heure}`;document.getElementById('rd-type').textContent=r.typeint;const nr=document.getElementById('rd-notes-row');if(r.notes){document.getElementById('rd-notes').textContent=r.notes;nr.style.display='flex';}else nr.style.display='none';showScreen('page-cal','cal-detail');}
+async function deleteRdv(){try{await supa(`/rest/v1/rdvs?id=eq.${currentRdvId}`,'DELETE');await loadRdvs();showScreen('page-cal','cal-main');toast('RDV supprimé');}catch(e){toast('Erreur');}}
+
+const DC={devis:{label:'Devis',prompt:b=>`Tu es un assistant pour artisans français. Génère un devis professionnel structuré pour : "${b}". Inclus objet, travaux, main d'œuvre, fournitures, TVA 10%, total TTC, conditions. Aucun markdown.`},relance:{label:'Relance facture',prompt:b=>`Tu es un assistant pour artisans français. Rédige une relance professionnelle ferme et courtoise pour : "${b}". Aucun markdown.`},email:{label:'Email client',prompt:b=>`Tu es un assistant pour artisans français. Rédige un email professionnel avec objet et corps pour : "${b}". Aucun markdown.`},rdv:{label:'Confirmation RDV',prompt:b=>`Tu es un assistant pour artisans français. Rédige un message de confirmation de RDV pour : "${b}". Aucun markdown.`},courrier:{label:'Courrier admin',prompt:b=>`Tu es un assistant pour artisans français. Rédige un courrier administratif formel pour : "${b}". Aucun markdown.`},soustraitance:{label:'Sous-traitance',prompt:b=>`Tu es un assistant pour artisans français. Rédige un accord de sous-traitance pour : "${b}". Aucun markdown.`}};
+function showDocForm(type){currentDocType=type;document.getElementById('doc-badge').textContent=DC[type].label;document.getElementById('doc-brief').value='';showScreen('page-docs','docs-form');}
+async function generateDoc(){const brief=document.getElementById('doc-brief').value.trim();if(!brief){document.getElementById('doc-brief').focus();return;}document.getElementById('doc-result').style.display='none';document.getElementById('doc-copy-row').style.display='none';document.getElementById('doc-loading').style.display='block';showScreen('page-docs','docs-result');try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:DC[currentDocType].prompt(brief)}]})});const data=await res.json();const text=data.content?.map(b=>b.text||'').join('')||'Erreur.';document.getElementById('doc-loading').style.display='none';document.getElementById('doc-result').textContent=text;document.getElementById('doc-result').style.display='block';document.getElementById('doc-copy-row').style.display='flex';}catch(e){document.getElementById('doc-loading').style.display='none';document.getElementById('doc-result').textContent='Erreur.';document.getElementById('doc-result').style.display='block';}}
+function copyDoc(){navigator.clipboard.writeText(document.getElementById('doc-result').textContent).then(()=>toast('Copié !'));}
+</script>
+</body>
+</html>
