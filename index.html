@@ -437,7 +437,6 @@ async function addClient(){
     adresse:($('input-cl-adresse').value||'').trim()||'—',
     type:$('input-cl-type').value||'Divers',
     statut:CL_STATUT,
-    user_id:USER.id
   };
   try{
     await supa('/rest/v1/clients','POST',payload);
@@ -550,7 +549,7 @@ async function addRdv(){
   const date=$('input-rdv-date').value,heure=$('input-rdv-heure').value;
   if(!date||!heure){toast('Date et heure requises');return;}
   try{
-    await supa('/rest/v1/rdvs','POST',{client_id:$('input-rdv-client').value||null,date,heure,typeint:$('input-rdv-typeint').value||'Autre',notes:$('input-rdv-notes').value.trim(),user_id:USER.id});
+    await supa('/rest/v1/rdvs','POST',{client_id:$('input-rdv-client').value||null,date,heure,typeint:$('input-rdv-typeint').value||'Autre',notes:$('input-rdv-notes').value.trim(),});
     await loadRdvs();showScreen('pg-cal','sc-cal-main');toast('RDV enregistré');
   }catch(e){toast('Erreur: '+e.message);}
 }
